@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mundo Microscópico — Células, Vírus e Bactérias</title>
+<style>
+  :root{
+    --bg:#07111f; --panel:#0d1b2d; --panel2:#11243a; --text:#eef6ff;
+    --muted:#a9bdd1; --accent:#58d6ff; --accent2:#8d7cff; --border:#23405d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+    radial-gradient(circle at 20% 10%,#123456 0,transparent 30%),
+    radial-gradient(circle at 90% 20%,#271b58 0,transparent 28%),var(--bg);
+    color:var(--text);min-height:100vh}
+  header{padding:28px 5vw 18px;text-align:center}
+  h1{font-size:clamp(2rem,4vw,3.5rem);margin:0 0 8px;letter-spacing:-1px}
+  header p{margin:0;color:var(--muted);font-size:1.05rem}
+  nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:16px 5vw 22px}
+  nav button{border:1px solid var(--border);background:#0c1b2c;color:var(--text);
+    padding:12px 22px;border-radius:999px;font-weight:700;cursor:pointer;transition:.2s}
+  nav button:hover,nav button.active{background:linear-gradient(135deg,#1a4964,#392d72);border-color:var(--accent);transform:translateY(-1px)}
+  main{width:min(1400px,92vw);margin:auto}
+  .screen{display:none;grid-template-columns:minmax(0,1.5fr) minmax(300px,.8fr);gap:20px}
+  .screen.active{display:grid}
+  .card{background:linear-gradient(180deg,rgba(17,36,58,.96),rgba(9,24,40,.96));
+    border:1px solid var(--border);border-radius:22px;box-shadow:0 18px 50px #0005;overflow:hidden}
+  .viewer{height:min(68vh,680px);min-height:450px;position:relative}
+  canvas{display:block;width:100%;height:100%}
+  .hint{position:absolute;left:16px;bottom:14px;background:#06111dcc;border:1px solid #31506d;
+    padding:9px 12px;border-radius:10px;color:#c9d9e8;font-size:.86rem}
+  .info{padding:25px}
+  .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#16354d;color:#77ddff;font-size:.78rem;font-weight:800;text-transform:uppercase}
+  h2{font-size:2rem;margin:12px 0 8px}
+  h3{margin:24px 0 10px;color:#8de7ff}
+  .info p{color:#c4d3e2;line-height:1.65}
+  .parts{display:grid;gap:8px}
+  .part{width:100%;text-align:left;background:#0a1727;border:1px solid #1d3851;color:#dce9f5;
+    padding:11px 13px;border-radius:11px;cursor:pointer}
+  .part:hover,.part.selected{border-color:var(--accent);background:#10263b}
+  .fact{margin-top:18px;padding:14px;border-left:3px solid var(--accent2);background:#0a1727;border-radius:0 12px 12px 0;color:#cbd9e7;line-height:1.5}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--border);background:#081625}
+  .controls button{border:1px solid #294760;background:#102338;color:#dbeafa;padding:9px 12px;border-radius:9px;cursor:pointer}
+  .controls button:hover{border-color:var(--accent)}
+  footer{text-align:center;color:#7890a5;padding:28px 15px 35px;font-size:.9rem}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .legend span{font-size:.8rem;color:#adc0d2;background:#0b1b2b;padding:7px 9px;border-radius:8px}
+  @media(max-width:900px){.screen.active{grid-template-columns:1fr}.viewer{height:55vh;min-height:380px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔬 Mundo Microscópico</h1>
+  <p>Explore células, vírus e bactérias em modelos 3D interativos</p>
+</header>
+
+<nav>
+  <button class="tab active" data-target="cell">🧫 Célula</button>
+  <button class="tab" data-target="virus">🦠 Vírus</button>
+  <button class="tab" data-target="bacteria">🔬 Bactéria</button>
+</nav>
+
+<main>
+  <section id="cell" class="screen active">
+    <div class="card">
+      <div class="viewer" id="cell-viewer"><div class="hint">🖱️ Arraste para girar • Scroll para aproximar</div></div>
+      <div class="controls">
+        <button onclick="resetScene('cell')">↺ Restaurar</button>
+        <button onclick="toggleSpin('cell')">⟳ Rotação automática</button>
+      </div>
+    </div>
+    <div class="card info">
+      <span class="badge">Biologia</span>
+      <h2>Célula animal</h2>
+      <p>A célula é a unidade básica dos seres vivos. Ela possui estruturas especializadas, chamadas organelas, que realizam diferentes funções.</p>
+      <h3>Estruturas</h3>
+      <div class="parts">
+        <button class="part" data-key="nucleo">🟣 Núcleo</button>
+        <button class="part" data-key="mito">🟠 Mitocôndria</button>
+        <button class="part" data-key="golgi">🟡 Complexo de Golgi</button>
+        <button class="part" data-key="er">🔵 Retículo endoplasmático</button>
+        <button class="part" data-key="membrana">🟢 Membrana plasmática</button>
+        <button class="part" data-key="ribossomos">⚪ Ribossomos</button>
+      </div>
+      <div class="fact" id="cell-fact">Clique em uma estrutura para descobrir sua função.</div>
+      <div class="legend"><span>Modelo didático — não está em escala</span><span>Use o mouse para explorar</span></div>
+    </div>
+  </section>
+
+  <section id="virus" class="screen">
+    <div class="card">
+      <div class="viewer" id="virus-viewer"><div class="hint">🖱️ Arraste para girar • Scroll para aproximar</div></div>
+      <div class="controls">
+        <button onclick="resetScene('virus')">↺ Restaurar</button>
+        <button onclick="toggleSpin('virus')">⟳ Rotação automática</button>
+      </div>
+    </div>
+    <div class="card info">
+      <span class="badge">Microbiologia</span>
+      <h2>Vírus</h2>
+      <p>Vírus são estruturas acelulares formadas por material genético envolvido por proteínas. Alguns possuem também um envelope lipídico.</p>
+      <h3>Estruturas</h3>
+      <div class="parts">
+        <button class="part" data-key="capsideo">🔷 Capsídeo</button>
+        <button class="part" data-key="genoma">🧬 Material genético</button>
+        <button class="part" data-key="envelope">🟣 Envelope</button>
+        <button class="part" data-key="espiculas">🟡 Espículas</button>
+      </div>
+      <div class="fact" id="virus-fact">Clique em uma estrutura para descobrir sua função.</div>
+      <div class="legend"><span>Modelo didático — formas simplificadas</span><span>Vírus dependem de células hospedeiras para se replicar</span></div>
+    </div>
+  </section>
+
+  <section id="bacteria" class="screen">
+    <div class="card">
+      <div class="viewer" id="bacteria-viewer"><div class="hint">🖱️ Arraste para girar • Scroll para aproximar</div></div>
+      <div class="controls">
+        <button onclick="resetScene('bacteria')">↺ Restaurar</button>
+        <button onclick="toggleSpin('bacteria')">⟳ Rotação automática</button>
+      </div>
+    </div>
+    <div class="card info">
+      <span class="badge">Microbiologia</span>
+      <h2>Bactéria</h2>
+      <p>Bactérias são organismos unicelulares procariontes. Elas não possuem núcleo delimitado por membrana, e seu DNA fica em uma região chamada nucleoide.</p>
+      <h3>Estruturas</h3>
+      <div class="parts">
+        <button class="part" data-key="parede">🟢 Parede celular</button>
+        <button class="part" data-key="dna">🟣 Nucleoide (DNA)</button>
+        <button class="part" data-key="ribos">⚪ Ribossomos</button>
+        <button class="part" data-key="capsula">🔵 Cápsula</button>
+        <button class="part" data-key="flagelo">🟡 Flagelo</button>
+        <button class="part" data-key="membranaB">🟠 Membrana plasmática</button>
+      </div>
+      <div class="fact" id="bacteria-fact">Clique em uma estrutura para descobrir sua função.</div>
+      <div class="legend"><span>Modelo didático — não está em escala</span><span>Algumas bactérias possuem estruturas adicionais</span></div>
+    </div>
+  </section>
+</main>
+
+<footer>Projeto escolar • Modelos 3D ilustrativos para fins educativos</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+const scenes = {};
+
+const facts = {
+ cell:{
+  nucleo:"Núcleo: armazena a maior parte do DNA da célula e participa do controle das atividades celulares.",
+  mito:"Mitocôndria: participa da produção de ATP, uma importante forma de energia utilizada pela célula.",
+  golgi:"Complexo de Golgi: modifica, organiza e encaminha proteínas e outras moléculas.",
+  er:"Retículo endoplasmático: participa da produção e do transporte de proteínas e lipídios.",
+  membrana:"Membrana plasmática: delimita a célula e controla a entrada e saída de substâncias.",
+  ribossomos:"Ribossomos: realizam a síntese de proteínas."
+ },
+ virus:{
+  capsideo:"Capsídeo: estrutura proteica que envolve e protege o material genético viral.",
+  genoma:"Material genético: contém as informações necessárias para a produção de componentes virais.",
+  envelope:"Envelope: camada lipídica presente em alguns vírus, geralmente adquirida a partir da célula hospedeira.",
+  espiculas:"Espículas: proteínas de superfície que podem participar do reconhecimento e da ligação a células hospedeiras."
+ },
+ bacteria:{
+  parede:"Parede celular: fornece proteção e ajuda a manter o formato da bactéria.",
+  dna:"Nucleoide: região onde se encontra o principal cromossomo bacteriano, formado por DNA.",
+  ribos:"Ribossomos: realizam a síntese de proteínas.",
+  capsula:"Cápsula: camada externa presente em algumas bactérias, podendo contribuir para proteção e adesão.",
+  flagelo:"Flagelo: estrutura que, em muitas bactérias, auxilia na movimentação.",
+  membranaB:"Membrana plasmática: controla a passagem de substâncias e participa de processos metabólicos."
+ }
+};
+
+function baseSetup(id){
+ const el=document.getElementById(id+"-viewer");
+ const scene=new THREE.Scene();
+ scene.background=new THREE.Color(0x071522);
+ const camera=new THREE.PerspectiveCamera(45,el.clientWidth/el.clientHeight,.1,100);
+ camera.position.set(0,0,8);
+ const renderer=new THREE.WebGLRenderer({antialias:true});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+ renderer.setSize(el.clientWidth,el.clientHeight);
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
+ el.prepend(renderer.domElement);
+ const root=new THREE.Group(); scene.add(root);
+ scene.add(new THREE.AmbientLight(0xffffff,.8));
+ const key=new THREE.DirectionalLight(0xffffff,1.5); key.position.set(5,6,8); scene.add(key);
+ const fill=new THREE.PointLight(0x6edcff,25,20); fill.position.set(-4,2,5); scene.add(fill);
+ const state={scene,camera,renderer,root,spin:false,homePos:camera.position.clone(),objects:{}};
+ scenes[id]=state;
+
+ let dragging=false,lastX=0,lastY=0;
+ renderer.domElement.addEventListener("pointerdown",e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+ renderer.domElement.addEventListener("pointerup",()=>dragging=false);
+ renderer.domElement.addEventListener("pointermove",e=>{
+   if(!dragging)return;
+   root.rotation.y+=(e.clientX-lastX)*.008;
+   root.rotation.x+=(e.clientY-lastY)*.008;
+   root.rotation.x=Math.max(-1.2,Math.min(1.2,root.rotation.x));
+   lastX=e.clientX;lastY=e.clientY;
+ });
+ renderer.domElement.addEventListener("wheel",e=>{
+   camera.position.z=Math.max(4,Math.min(14,camera.position.z+e.deltaY*.008));
+ });
+ new ResizeObserver(()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)}).observe(el);
+ function animate(){requestAnimationFrame(animate);if(state.spin)root.rotation.y+=.004;renderer.render(scene,camera)}
+ animate();
+ return state;
+}
+
+function mat(color,transparent=false,opacity=1){return new THREE.MeshPhysicalMaterial({color,roughness:.32,metalness:.05,transparent,opacity,clearcoat:.3})}
+function sphere(r,m){return new THREE.Mesh(new THREE.SphereGeometry(r,48,32),m)}
+function torus(R,r,m){return new THREE.Mesh(new THREE.TorusGeometry(R,r,18,64),m)}
+function tube(points,r,m){return new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),80,r,10,false),m)}
+
+function buildCell(){
+ const s=baseSetup("cell"), g=s.root;
+ const shell=sphere(2.55,mat(0x45d89a,true,.18)); g.add(shell); s.objects.membrana=shell;
+ const nuc=sphere(.9,mat(0x8b5cf6)); nuc.position.set(-.45,.1,.15); g.add(nuc); s.objects.nucleo=nuc;
+ for(let i=0;i<8;i++){
+   const a=i*Math.PI*2/8, m=sphere(.27,mat(0xff9f43)); m.scale.set(1.5,.75,.75);m.position.set(Math.cos(a)*1.45,Math.sin(a)*1.0,(i%3-.9)*.45);g.add(m);s.objects.mito??=[];s.objects.mito.push(m);
+ }
+ const gol=torus(.7,.16,mat(0xffd447));gol.position.set(.85,-.9,.35);gol.rotation.x=1.2;g.add(gol);s.objects.golgi=gol;
+ const er=[];for(let i=0;i<3;i++){let t=torus(.95+i*.08,.035,mat(0x45b8ff));t.position.set(.2,.9,-.3-i*.05);t.rotation.x=.5;t.rotation.y=i*.4;g.add(t);er.push(t)}s.objects.er=er;
+ for(let i=0;i<45;i++){let a=Math.random()*Math.PI*2,b=Math.acos(2*Math.random()-1),r=2.0;let q=sphere(.035,mat(0xf1f5f9));q.position.set(r*Math.sin(b)*Math.cos(a),r*Math.sin(b)*Math.sin(a),r*Math.cos(b));g.add(q);s.objects.ribossomos??=[];s.objects.ribossomos.push(q)}
+}
+function buildVirus(){
+ const s=baseSetup("virus"),g=s.root;
+ const env=sphere(1.75,mat(0x8b5cf6,true,.25));g.add(env);s.objects.envelope=env;
+ const core=sphere(1.2,mat(0x277cff,true,.32));g.add(core);s.objects.capsideo=core;
+ const curve=[];for(let i=0;i<100;i++){let t=i/99*Math.PI*4.5;curve.push(new THREE.Vector3((.65*t/(Math.PI*4.5))*Math.cos(t)*1.2,(.65*t/(Math.PI*4.5))*Math.sin(t)*1.2,(t/(Math.PI*4.5)-.5)*1.5))}
+ const dna=tube(curve,.055,mat(0xff6b9a));g.add(dna);s.objects.genoma=dna;
+ for(let i=0;i<18;i++){let a=i*Math.PI*2/18, z=(i%3-1)*.55;let p=new THREE.Group();p.position.set(Math.cos(a)*1.75,Math.sin(a)*1.75,z);p.lookAt(0,0,z);let stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.08,.45,12),mat(0xffd447));stem.rotation.z=Math.PI/2;p.add(stem);let head=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),mat(0xffd447));head.position.x=.23;p.add(head);g.add(p);s.objects.espiculas??=[];s.objects.espiculas.push(p)}
+}
+function buildBacteria(){
+ const s=baseSetup("bacteria"),g=s.root;
+ const body=new THREE.Mesh(new THREE.CapsuleGeometry(1.25,2.6,24,48),mat(0x49d68b));body.rotation.z=Math.PI/2;g.add(body);s.objects.parede=body;
+ const inner=new THREE.Mesh(new THREE.CapsuleGeometry(1.05,2.45,24,48),mat(0xffa34d));inner.rotation.z=Math.PI/2;g.add(inner);s.objects.membranaB=inner;
+ const dnaPts=[];for(let i=0;i<90;i++){let t=i/89*Math.PI*5;dnaPts.push(new THREE.Vector3(Math.cos(t)*.35,Math.sin(t)*.3,(i/89-.5)*2.1))}
+ const dna=tube(dnaPts,.08,mat(0x9b5cff));g.add(dna);s.objects.dna=dna;
+ for(let i=0;i<28;i++){let p=sphere(.075,mat(0xf4f7fb));p.position.set((Math.random()-.5)*1.8,(Math.random()-.5)*1.2,(Math.random()-.5)*1.7);g.add(p);s.objects.ribos??=[];s.objects.ribos.push(p)}
+ for(let i=0;i<4;i++){let t=torus(1.38,.06,mat(0x36a7ff));t.rotation.y=Math.PI/2;t.position.z=(i-1.5)*.55;g.add(t);s.objects.capsula??=[];s.objects.capsula.push(t)}
+ for(let i=0;i<5;i++){let pts=[new THREE.Vector3(1.5,(i-2)*.5,0),new THREE.Vector3(2.3,(i-2)*.65,.5),new THREE.Vector3(3.3,(i-2)*.3,-.2),new THREE.Vector3(4,(i-2)*.1,.4)];let f=tube(pts,.035,mat(0xffd447));g.add(f);s.objects.flagelo??=[];s.objects.flagelo.push(f)}
+}
+buildCell();buildVirus();buildBacteria();
+
+function setFact(type,key){
+ const el=document.getElementById(type+"-fact");
+ el.textContent=facts[type][key]||"";
+ document.querySelectorAll("#"+type+" .part").forEach(b=>b.classList.toggle("selected",b.dataset.key===key));
+}
+document.querySelectorAll(".part").forEach(btn=>{
+ btn.addEventListener("click",()=>setFact(btn.closest(".screen").id,btn.dataset.key));
+});
+document.querySelectorAll(".tab").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  btn.classList.add("active");document.getElementById(btn.dataset.target).classList.add("active");
+  // force renderer sizing after display change
+  const s=scenes[btn.dataset.target],el=document.getElementById(btn.dataset.target+"-viewer");
+  if(s){s.camera.aspect=el.clientWidth/el.clientHeight;s.camera.updateProjectionMatrix();s.renderer.setSize(el.clientWidth,el.clientHeight)}
+ });
+});
+function resetScene(id){const s=scenes[id];s.root.rotation.set(0,0,0);s.camera.position.copy(s.homePos);s.spin=false}
+function toggleSpin(id){scenes[id].spin=!scenes[id].spin}
+setFact("cell","nucleo");
+</script>
+</body>
+</html>
